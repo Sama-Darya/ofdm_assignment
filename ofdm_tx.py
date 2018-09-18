@@ -9,12 +9,12 @@ import numpy as np
 import scipy.io.wavfile as wavfile
 import matplotlib.pyplot as plt
 
+### DATA TRANSMISSION
 
-CyclicPrefix=1100 # Cyclic Prefix is just another name for Guard Interval
-
+cyclicPrefix=1100 # Cyclic Prefix is just another name for Guard Interval
 
 def createSymbol(data):
-    # 1) turning the data into a stream of bits:
+    # 2.1) turning the data into a stream of bits:
     img1Dbits = np.unpackbits(data)
 
     # The previously grey-scale values have now become 8bit binary values.
@@ -24,9 +24,7 @@ def createSymbol(data):
     # This means we need 8 times as many entries as before to represent the data.
     # That means expanding from 1 by 25600 array to 1 by 204800 array.
 
-    bins1=np.arange(-0.5,1.5,0.1)
-
-    # 2) Scramble the data: in this section we aim to randomise the data.
+    # 2.2) Scramble the data: in this section we aim to randomise the data.
     # This is to ensure that the data is not constant; if the data is constant it'll be
     # hard to detect the start point of data after transmission using "Guard Intervals"
 
@@ -40,7 +38,7 @@ def createSymbol(data):
     
     # The data now only consists of 1s, 0s and -1s.
 
-    # 3) Creating complex frequency coefficients
+    # 2.3) Creating complex frequency coefficients
     # In this section we aim at creating complex numbers from the bits.
     # starting from the first entry, we treat one bit as a real-valued number
     # and treat the next entry as its complex part.
@@ -56,7 +54,7 @@ def createSymbol(data):
     # This will map the previous data from 1, 0, -1 to 1, -1, -3 respectively.
 
 
-    # 4) Creating a frequency Spectrum from the data:
+    # 2.4) Creating a frequency Spectrum from the data:
     # In order to this we need to appreciate of the main properties of a frequency spectrum:
     #   "A frequency spectrum is always symmetrical (for real-valued time-domain data)"
     # The only exception to this symmetry is the DC (zero) frequency. (see below ***)
@@ -67,7 +65,7 @@ def createSymbol(data):
                                             complexMirror))
                                             
                                             
-    # 5) Pilot Tones:
+    # 2.5) Pilot Tones:
     # In this section pilot tones are added to the frequency domain. The purpose of this
     # is to help locate the exact Start Point of the data in the receiver side.
     # More specifically, we add a frequency of 1+0j in between the already existing
@@ -88,7 +86,7 @@ def createSymbol(data):
 
     pilotTonedData=pilotTonedDataReal + pilotTonedDataImag * 1j
 
-    # 6) In this section the frequency spectrum is padded with some zeros in order to
+    # 2.6) In this section the frequency spectrum is padded with some zeros in order to
     # meet the requirements for sampling rate and minimum detectable frequency of the
     # receiver device.
 
@@ -100,7 +98,7 @@ def createSymbol(data):
     # Note that there is exactly one more zero added to the start of spectrum than the end.
     # *** this is the DC frequency, which is the only exception to the symmetry of spectrum
 
-    # 7) IFFT: performing an Inverse Fast Fourier Transformation on the frequency
+    # 2.7) IFFT: performing an Inverse Fast Fourier Transformation on the frequency
     # spectrum created above results in a time-domain data; which is then transmitted
     symbol = np.real(np.fft.ifft(paddedPilotTonedData))
     return symbol
@@ -110,7 +108,7 @@ def createSymbol(data):
 
 plt.close("all")
 
-# loading the data: in this case the data is an image.
+# 1) loading the data: in this case the data is an image.
 img = ndimage.imread("greytee.png")
 
 # At this point the data is a 100 by 256 array.
@@ -129,20 +127,22 @@ plt.title("Histogram of pixles' greyScale")
 transmitData = []
 
 for i in range(len(img)):
+    # 2) creating the symbols
     symbol = createSymbol(img[i])
 
-    # Cyclic Prefix:
+    # 3) Cyclic Prefix:
     # The symbol is in time-domain, a small part of data from its end is taken and is
     # added to the start of data; this repeated section is called "guard interval"
     # or cyclic prefix.
     # For example: given this data: [a,1,b,2,c,3,d,4,e,5], and final 3 entries as the
     # guard interval, we would have: [4,e,5, a,1,b,2,c,3,d,4,e,5]
-    symbolWithCyclicPrefix=np.concatenate((symbol[-CyclicPrefix:],
+
+    symbolWithCyclicPrefix=np.concatenate((symbol[-cyclicPrefix:],
                                            symbol))
 
     # We add the symbol to our datastream
     transmitData=np.concatenate((transmitData, symbolWithCyclicPrefix))
 
-# Data transmission: finally the data is saved as an audio file to be transmitted and 
+# 4) Data transmission: finally the data is saved as an audio file to be transmitted and 
 # received using a loud speaker and microphone respectively.
-wavfile.write('ofdmsignl2.wav',48000,transmitData) 
+wavfile.write('ofdmSignal.wav',48000,transmitData) 
