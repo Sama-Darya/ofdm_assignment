@@ -145,4 +145,9 @@ for i in range(len(img)):
 
 # 4) Data transmission: finally the data is saved as an audio file to be transmitted and 
 # received using a loud speaker and microphone respectively.
-wavfile.write('ofdmSignal.wav',48000,transmitData) 
+
+transmitDataNorm=transmitData/max(transmitData)
+transmitDataScaled=transmitDataNorm * 30000
+transmitDataInt=transmitDataScaled.astype(np.int16)
+
+wavfile.write('ofdmSignal.wav',441000,transmitDataInt) 
