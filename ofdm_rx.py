@@ -36,9 +36,7 @@ def decodeSymbol(data):
     # 5.3) Removing the Pilot Tones:
     # the original spectrum is found by dismissing every other data (i.e. the pilot tones)
     
-    fullComplexDataWithMirrorPrimeReal=np.real(pilotTonedDataPrime[0::2])
-    fullComplexDataWithMirrorPrimeImag=np.imag(pilotTonedDataPrime[0::2])
-    fullComplexDataWithMirrorPrime=fullComplexDataWithMirrorPrimeReal + fullComplexDataWithMirrorPrimeImag * 1j
+    fullComplexDataWithMirrorPrime=pilotTonedDataPrime[0::2]
         
     # 5.4) QAM decoding: 
     # every received data contain a real and an imaginary part. These are unpacked into two 
@@ -52,19 +50,19 @@ def decodeSymbol(data):
     dataTimeDomainImag=np.imag(fullComplexDataWithMirrorPrime[0:datalLength2])
     
     img1DbitsRandomPrime=np.ones(datalLength)
-    img1DbitsRandomPrime[0::2]=(dataTimeDomainReal + 1 ) / 2
-    img1DbitsRandomPrime[1::2]=(dataTimeDomainImag + 1 ) / 2
+    img1DbitsRandomPrime[0::2]=dataTimeDomainReal
+    img1DbitsRandomPrime[1::2]=dataTimeDomainImag
     # We have now recovered the original scrambled data
     
     # 5.5) Unscramble the data: this is done by dividing the data by the same random array that
     # was used to randomise the data originally, and hence the original binary data is recovered
     np.random.seed(0)
     scrambler = np.random.randint(0,2,img1DbitsRandomPrime.size) * 2.0 - 1.0
-    img1DbitsPrime = img1DbitsRandomPrime / scrambler
+    img1DbitsPrime = img1DbitsRandomPrime * scrambler
     
     # The next few lines ensure that we only have 0s and 1s left in the data
     for i in range (len(img1DbitsPrime)): #look at histogram and change the threshholds
-        if (img1DbitsPrime[i] < 0.2):
+        if (img1DbitsPrime[i] < 0):
             img1DbitsPrime[i] = 0
         else:
             img1DbitsPrime[i] = 1

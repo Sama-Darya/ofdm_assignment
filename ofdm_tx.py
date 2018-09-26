@@ -12,10 +12,11 @@ import matplotlib.pyplot as plt
 ### DATA TRANSMISSION
 
 cyclicPrefix=1100 # Cyclic Prefix is just another name for Guard Interval
+zero_padding=2 # pick an even number!
 
 def createSymbol(data):
-    # 2.1) turning the data into a stream of bits:
-    img1Dbits = np.unpackbits(data)
+    # 2.1) turning the data into a stream of bits -1,+1
+    img1Dbits = np.unpackbits(data) * 2.0 - 1.0
 
     # The previously grey-scale values have now become 8bit binary values.
     # For example:
@@ -46,9 +47,10 @@ def createSymbol(data):
     # these will make 2 complex data of: -1+1j and 1+0j
     # The next 3 lines of code does just that
 
-    img1DReal = (img1DbitsRandom[0::2]) * 2.0 - 1.0
-    img1DImag = (img1DbitsRandom[1::2]) * 2.0 - 1.0
+    img1DReal = (img1DbitsRandom[0::2])
+    img1DImag = (img1DbitsRandom[1::2])
     complexImage = img1DReal + img1DImag * 1j
+    #print(complexImage)
 
     # Notice how the data was scaled by the *2 multiplication and -1 addition.
     # This will map the previous data from 1, 0, -1 to 1, -1, -3 respectively.
@@ -62,7 +64,7 @@ def createSymbol(data):
 
     complexMirror = np.conj(complexImage[::-1])
     fullComplexDataWithMirror = np.concatenate((complexImage,
-                                            complexMirror))
+                                                complexMirror))
                                             
                                             
     # 2.5) Pilot Tones:
@@ -81,8 +83,9 @@ def createSymbol(data):
     pilotTonedDataImag=np.zeros(2 * len(fullComplexDataWithMirror)-1) # -1 for symmetry
     pilotTonedDataReal[0::2]=np.real(fullComplexDataWithMirror)
     pilotTonedDataImag[0::2]=np.imag(fullComplexDataWithMirror)
-    pilotTonedDataReal[1::2]=1 #amplitude of 1
-    pilotTonedDataImag[1::2]=0 #Phase of Zero
+    pilotTonedDataReal[1::2]=0
+    pilotTonedDataImag[1::2]=0
+    pilotTonedDataReal[1::int(len(pilotTonedDataReal)/20)] = 1 # a few pilots but not too many
 
     pilotTonedData=pilotTonedDataReal + pilotTonedDataImag * 1j
 
@@ -90,7 +93,6 @@ def createSymbol(data):
     # meet the requirements for sampling rate and minimum detectable frequency of the
     # receiver device.
 
-    zero_padding=2 # pick an even number!
     paddedPilotTonedData = np.concatenate((np.zeros(zero_padding+1),
                                            pilotTonedData,
                                            np.zeros(zero_padding)))
