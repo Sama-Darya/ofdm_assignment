@@ -146,7 +146,7 @@ for i in range(len(img)):
 # 4) Data transmission: finally the data is saved as an audio file to be transmitted and 
 # received using a loud speaker and microphone respectively.
 
-transmitDataNorm=transmitData/max(transmitData)
+transmitDataNorm=transmitData/(max(transmitData)-min(transmitData))
 transmitDataScaled=transmitDataNorm * 30000
 transmitDataInt=transmitDataScaled.astype(np.int16)
 
