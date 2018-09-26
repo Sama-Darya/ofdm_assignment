@@ -84,6 +84,7 @@ def decodeSymbol(data):
 # 1) We start by loading the audio data 
 [f, receivedDataRaw]= wavfile.read('ofdmSignal.wav', mmap=False)
 
+receivedDataRaw=receivedDataRaw/30000
 
 # 2) Data loss: during real-life transmission often the start of the data is lost.
 # In order to mimic this effect, a part of data is manually removed form the start.
@@ -124,4 +125,4 @@ plt.title("Image: After reception (After FFT)")
 plt.subplot(2,1,2)
 plt.hist(imgPrime)
 plt.title("Histogram of pixles' greyScale")
-
+plt.show()
