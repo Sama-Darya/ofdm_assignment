@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 
 cyclicPrefix=1100 # Cyclic Prefix is just another name for Guard Interval
 zero_padding=2 # pick an even number!
+nPilots=20 # number of pilots
 
 def createSymbol(data):
     # 2.1) turning the data into a stream of bits -1,+1
@@ -85,7 +86,7 @@ def createSymbol(data):
     pilotTonedDataImag[0::2]=np.imag(fullComplexDataWithMirror)
     pilotTonedDataReal[1::2]=0
     pilotTonedDataImag[1::2]=0
-    pilotTonedDataReal[1::int(len(pilotTonedDataReal)/20)] = 1 # a few pilots but not too many
+    pilotTonedDataReal[1::int(len(pilotTonedDataReal)/nPilots)] = 1 # a few pilots but not too many
 
     pilotTonedData=pilotTonedDataReal + pilotTonedDataImag * 1j
 
@@ -151,5 +152,4 @@ for i in range(len(img)):
 transmitDataNorm=transmitData/(max(transmitData)-min(transmitData))
 transmitDataScaled=transmitDataNorm * 30000
 transmitDataInt=transmitDataScaled.astype(np.int16)
-
-wavfile.write('ofdmSignal.wav',441000,transmitDataInt) 
+wavfile.write('ofdmSignal.wav',44100,transmitDataInt) 
